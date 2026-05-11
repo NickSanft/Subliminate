@@ -18,7 +18,8 @@
     "test:privacy": "playwright test privacy.spec.ts",
     "size": "size-limit",
     "fetch-fonts": "node scripts/fetch-fonts.mjs",
-    "fixtures:generate": "node scripts/generate-fixtures.mjs"
+    "fixtures:generate": "node scripts/generate-fixtures.mjs",
+    "verify:repro": "node scripts/verify-repro.mjs"
   },
   "dependencies": {
     "papaparse": "^5.5.3",

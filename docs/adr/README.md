@@ -15,9 +15,9 @@ decision is probably too small for an ADR.
 | ---- | ---------------------------------------------------- | -------- | ----- |
 | [0001](0001-no-backend.md) | No backend                              | Accepted | 1     |
 | [0002](0002-csv-only-ingestion.md) | CSV-only ingestion              | Accepted | 2     |
-| 0003 | CSP as primary invariant                             | Pending  | 6     |
-| 0004 | Service-worker fetch trap                            | Pending  | 6     |
-| 0005 | Reproducible builds and bundle hashes                | Pending  | 6     |
+| [0003](0003-csp-as-primary-invariant.md) | CSP as primary invariant  | Accepted | 6     |
+| [0004](0004-service-worker-fetch-trap.md) | Service-worker fetch trap | Accepted | 6     |
+| [0005](0005-reproducible-builds-and-bundle-hashes.md) | Reproducible builds and bundle hashes | Accepted | 6 |
 | [0006](0006-self-hosted-fonts.md) | Self-hosted fonts                 | Accepted | 1     |
 | 0007 | Ephemeral-by-default persistence                     | Pending  | 7     |
 | [0008](0008-recurring-charge-detection-heuristics.md) | Recurring-charge detection heuristics | Accepted | 3 |

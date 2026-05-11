@@ -7,6 +7,7 @@ import { ReviewScreen } from '@/screens/review/ReviewScreen';
 import { DashboardScreen } from '@/screens/dashboard/DashboardScreen';
 import { SubscriptionsScreen } from '@/screens/subscriptions/SubscriptionsScreen';
 import { CanceledScreen } from '@/screens/canceled/CanceledScreen';
+import { PrivacyScreen } from '@/screens/privacy/PrivacyScreen';
 import { Placeholder } from '@/screens/placeholder/Placeholder';
 
 // Recharts is heavy (~150 KB gzipped). The detail and insights screens
@@ -77,7 +78,7 @@ export function AppRoutes() {
           />
         }
       />
-      <Route path="/privacy" element={<Placeholder title="Privacy &amp; verification" note="Ships in Phase 6." />} />
+      <Route path="/privacy" element={<PrivacyScreen />} />
       <Route path="/settings" element={<Placeholder title="Settings" note="Ships in Phase 7." />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

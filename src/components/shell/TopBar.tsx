@@ -1,10 +1,32 @@
+import { useEffect, useRef } from 'react';
 import { useTheme } from '@/app/theme';
 import { Search } from '../primitives/Icon';
 import { NetworkPanel } from '../network/NetworkPanel';
+import { formatLocalTime } from '@/lib/network-monitor';
+import { useMonitorStore } from '@/stores/monitor.store';
 
 export function TopBar() {
   const { resolved, set } = useTheme();
   const next = resolved === 'dark' ? 'light' : 'dark';
+  const monitor = useMonitorStore((s) => s.state);
+  const expanded = useMonitorStore((s) => s.expanded);
+  const toggle = useMonitorStore((s) => s.toggle);
+  const setExpanded = useMonitorStore((s) => s.setExpanded);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!expanded) return;
+    function onPointerDown(event: PointerEvent) {
+      const node = panelRef.current;
+      if (!node) return;
+      if (event.target instanceof Node && !node.contains(event.target)) {
+        setExpanded(false);
+      }
+    }
+    window.addEventListener('pointerdown', onPointerDown);
+    return () => window.removeEventListener('pointerdown', onPointerDown);
+  }, [expanded, setExpanded]);
+
   return (
     <header
       style={{
@@ -15,6 +37,7 @@ export function TopBar() {
         justifyContent: 'space-between',
         padding: '0 22px',
         background: 'var(--paper-0)',
+        position: 'relative',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -38,8 +61,28 @@ export function TopBar() {
           </span>
         </label>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <NetworkPanel state="idle" count={0} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative' }} ref={panelRef}>
+        <button
+          type="button"
+          onClick={toggle}
+          aria-haspopup="dialog"
+          aria-expanded={expanded}
+          aria-label="Toggle network activity panel"
+          style={{ background: 'transparent', border: 0, padding: 0, cursor: 'pointer', color: 'inherit' }}
+        >
+          <NetworkPanel state="idle" count={monitor.blocked} />
+        </button>
+        {expanded && (
+          <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 8, zIndex: 20 }}>
+            <NetworkPanel
+              state="expanded"
+              count={monitor.blocked}
+              sessionStart={formatLocalTime(monitor.sessionStart)}
+              requests={monitor.log.map((entry) => ({ time: entry.time, url: entry.url, status: entry.status }))}
+              onClose={() => setExpanded(false)}
+            />
+          </div>
+        )}
         <button
           type="button"
           onClick={() => set(next)}

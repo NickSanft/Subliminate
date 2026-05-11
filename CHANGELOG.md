@@ -4,6 +4,133 @@ All notable changes to Subliminate. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); pre-1.0 minor
 version tracks phase number.
 
+## [0.6.0] — 2026-05-11
+
+**Phase 6 — Privacy architecture (the centerpiece)**
+
+This is the phase the project earns the portfolio claim on. The privacy
+invariant stops being "we promise" and starts being "you can verify in
+30 seconds."
+
+### Added
+
+- **Service-worker fetch trap** ([public/service-worker.js](public/service-worker.js)).
+  Intercepts every fetch from the page. Same-origin requests pass
+  through (and are logged as `allowed`); cross-origin attempts are
+  blocked with `HTTP 403 X-Subliminate-Block: 1` (and logged as
+  `blocked`). Log entries publish on the
+  `subliminate-network` BroadcastChannel.
+- **Network monitor** ([src/lib/network-monitor/](src/lib/network-monitor)):
+  pure reducer for state transitions (deduplication within 50ms, log
+  cap at 50 entries), plus
+  [monitor.store.ts](src/stores/monitor.store.ts) which subscribes to
+  the BroadcastChannel and runs a `PerformanceObserver` for `resource`
+  entries as a complementary signal
+- **Live NetworkPanel.** The top-bar pill now reads the blocked-request
+  counter from the store. Click to expand into a drawer showing the
+  request log (newest-first, capped at 50)
+- **Privacy screen** ([src/screens/privacy/PrivacyScreen.tsx](src/screens/privacy/PrivacyScreen.tsx)):
+  - Hero with a live counter (`hero-blocked-count`) and session start
+    time
+  - "Verify by going offline" instructions with a live
+    `navigator.onLine` indicator
+  - Bundle-hash card with the production build's SHA-256 digest
+  - CSP-as-evidence table with every directive + plain-English gloss;
+    `connect-src 'none'` is emphasized as load-bearing
+  - Live network log (post-mount intercepts surfaced in real time)
+  - ADR index with all eight accepted ADRs
+- **Reproducible-build pipeline.** A Vite plugin
+  ([scripts/vite-plugin-bundle-manifest.mjs](scripts/vite-plugin-bundle-manifest.mjs))
+  emits `dist/bundle-manifest.json` with SHA-256 for every shipped file
+  plus a top-level `digest` (the hash of the sorted file list). A
+  virtual module `virtual:subliminate-bundle-manifest` exposes the
+  digest at runtime so the Privacy screen renders it. The plugin
+  patches the bundled JS chunks to bake in the final digest
+  post-build, so what the page shows is what's on disk
+- **`pnpm verify:repro`** ([scripts/verify-repro.mjs](scripts/verify-repro.mjs)):
+  builds twice (with `SOURCE_DATE_EPOCH=0`) and asserts the two
+  digests match. Wired into CI as a required step
+
+### Why this matters
+
+Before Phase 6 the project had the *infrastructure* for the privacy
+claim — CSP meta, self-hosted fonts, no external script tags — but
+nothing the user could *see* working. The service-worker trap gives the
+counter on the Privacy page real teeth: it's incremented by the same
+code that would catch a leak. The reproducible-build pipeline closes
+the loop from the other end — anyone can verify the deployed bundle
+matches the source. Together they convert the claim from "trust us" to
+"go ahead, audit it."
+
+### Architecture
+
+- The SW is small (~3 KB) and registered automatically on first load.
+  CSP `connect-src 'none'` is the *primary* defense (browser-level);
+  the SW is the *user-visible* defense (logs attempts). They are
+  complementary, not redundant — see ADR-0004
+- The bundle-manifest plugin uses sentinel-string patching to embed
+  its own digest, which is a fixed-point problem the plugin solves
+  with a two-pass build (compute, patch, recompute). See ADR-0005
+- The monitor store resets on page load — there is no persistence for
+  the request log (that would be a privacy problem of its own)
+
+### Tests
+
+- 13 new unit tests for the monitor reducer (initial state, sw-ready
+  transition, allowed/blocked counters, dedup window, log cap, reset,
+  formatLocalTime, shortenUrl)
+- 4 new Playwright tests:
+  - Privacy page renders hero / CSP / log / ADR index
+  - Hero counter reads 0 on a fresh load + online state shown
+  - Bundle-hash card renders the digest (sentinel in dev, real sha256
+    in production builds)
+  - Service worker registers and reaches `activated`/`activating`
+  - Programmatic cross-origin fetch from the page returns the 403
+    block (with `X-Subliminate-Block`) or is refused by CSP — both
+    outcomes satisfy the invariant
+- CI now runs `pnpm verify:repro` as a required step
+
+### Bundle (split budgets)
+
+| Asset                     | Brotli   | Budget |
+| ------------------------- | -------- | ------ |
+| Main bundle (initial)     | 69.6 KB  | 85 KB  |
+| Recharts chunk (lazy)     | 86.3 KB  | 100 KB |
+| Detail screen chunk       |  8.7 KB  | 12 KB  |
+| Insights screen chunk     |  8.8 KB  | 12 KB  |
+| CSV worker (lazy)         |  8.6 KB  | 12 KB  |
+| CSS                       |  3.8 KB  |  6 KB  |
+
+Main grew ~3.7 KB (NetworkPanel wiring + monitor.store + Privacy
+screen — Privacy is not lazy because it's small and likely visited
+first by skeptical reviewers).
+
+### Pre-push checklist
+
+- ✅ typecheck, lint clean
+- ✅ 167/167 unit tests
+- ✅ 30/30 Playwright tests
+- ✅ build + all six size budgets pass
+- ✅ `pnpm verify:repro` — two consecutive builds produce identical
+  digests
+- ✅ CI green on the push commit BEFORE tagging (per memory rule)
+
+### ADRs added
+
+- [ADR-0003 — CSP as primary invariant](docs/adr/0003-csp-as-primary-invariant.md)
+- [ADR-0004 — Service-worker fetch trap](docs/adr/0004-service-worker-fetch-trap.md)
+- [ADR-0005 — Reproducible builds and bundle hashes](docs/adr/0005-reproducible-builds-and-bundle-hashes.md)
+
+### Limitations / not yet shipped
+
+- The Privacy page links to ADRs on GitHub rather than rendering them
+  in-app. Reviewers click through for the prose
+- Deployment to GitHub Pages still pending (Phase 8 adds the
+  deploy workflow). Once deployed, the published digest can be
+  cross-checked against a fresh local `pnpm build`
+
+---
+
 ## [0.5.0] — 2026-05-11
 
 **Phase 5 — Subscription detail + Insights**
