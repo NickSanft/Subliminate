@@ -5,7 +5,7 @@ your bank; Subliminate finds the recurring charges, surfaces price hikes,
 and runs entirely in your browser tab. The Network Activity panel reads
 zero, because zero is the truth.
 
-> **Status:** Phase 5 of 8. Subscription detail (price trajectory + cadence strip + charge history + notes), Insights (overlaps, might-be-forgotten, YoY chart, top 5), Canceled list. Recharts is lazy-loaded so the Dashboard stays under budget. The verifiable-privacy centerpiece ships in Phase 6. See [CHANGELOG.md](CHANGELOG.md).
+> **Status:** Phase 6 of 8. The privacy centerpiece is live: service-worker fetch trap, reproducible-build bundle hash, Privacy page with the CSP-as-evidence table and the live network log. The portfolio claim is now verifiable in 30 seconds. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Verify it in 30 seconds
 
@@ -113,7 +113,7 @@ tests/
 | 3     | Recurring-charge detection + Review screen         | v0.3.0 ← shipped |
 | 4     | Dashboard                                          | v0.4.0 ← shipped |
 | 5     | Subscription detail + Insights                     | v0.5.0 ← shipped |
-| 6     | Privacy architecture: SW fetch trap, repro builds  | v0.6.0 |
+| 6     | Privacy architecture: SW fetch trap, repro builds  | v0.6.0 ← shipped |
 | 7     | Settings + ephemeral-first persistence             | v0.7.0 |
 | 8     | ADR pass, deploy, README polish                    | v1.0.0 |
 
@@ -131,6 +131,9 @@ See [docs/adr/](docs/adr/README.md). ADRs that exist so far:
 
 - [ADR-0001 — No backend](docs/adr/0001-no-backend.md)
 - [ADR-0002 — CSV-only ingestion](docs/adr/0002-csv-only-ingestion.md)
+- [ADR-0003 — CSP as primary invariant](docs/adr/0003-csp-as-primary-invariant.md)
+- [ADR-0004 — Service-worker fetch trap](docs/adr/0004-service-worker-fetch-trap.md)
+- [ADR-0005 — Reproducible builds &amp; bundle hashes](docs/adr/0005-reproducible-builds-and-bundle-hashes.md)
 - [ADR-0006 — Self-hosted fonts](docs/adr/0006-self-hosted-fonts.md)
 - [ADR-0008 — Recurring-charge detection heuristics](docs/adr/0008-recurring-charge-detection-heuristics.md)
 - [ADR-0009 — Generic CSV mapper over bank presets](docs/adr/0009-generic-csv-mapper-over-bank-presets.md)
