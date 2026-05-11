@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const FIXTURES = resolve(__dirname, '..', 'fixtures');
 
-async function uploadAndConfirm(page: import('@playwright/test').Page, fixture: string) {
+async function uploadAndConfirm(page: Page, fixture: string) {
   await page.goto('/upload');
   await page.getByTestId('csv-file-input').setInputFiles(resolve(FIXTURES, fixture));
   await expect(page.getByRole('heading', { name: /confirm the columns/i })).toBeVisible({ timeout: 15_000 });
