@@ -8,7 +8,7 @@ import type { Transaction } from '../csv/csv.types';
 
 export type Cadence = 'weekly' | 'monthly' | 'quarterly' | 'semi-annual' | 'annual';
 
-export type ReviewState = 'pending' | 'kept' | 'rejected';
+export type ReviewState = 'pending' | 'kept' | 'rejected' | 'canceled';
 
 export type ConfidenceBand = 'low' | 'medium' | 'high';
 

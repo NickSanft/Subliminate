@@ -16,15 +16,26 @@ export type DetectionState =
 
 export type SortKey = 'confidence' | 'annual' | 'monthly' | 'alphabetical' | 'cadence';
 
-export type Filter = 'all' | 'kept' | 'pending' | 'rejected' | 'high' | 'low';
+export type Filter = 'all' | 'kept' | 'pending' | 'rejected' | 'canceled' | 'high' | 'low';
+
+/** Per-subscription user annotation. Lives in-memory only until Phase 7
+ *  persistence ships. */
+export type Annotation = {
+  notes: string;
+  tags: readonly string[];
+};
 
 type Store = {
   state: DetectionState;
   sort: SortKey;
   filter: Filter;
+  annotations: Readonly<Record<string, Annotation>>;
   run: (transactions: readonly Transaction[]) => void;
   reset: () => void;
   setReviewState: (id: string, state: ReviewState) => void;
+  setNotes: (id: string, notes: string) => void;
+  addTag: (id: string, tag: string) => void;
+  removeTag: (id: string, tag: string) => void;
   setSort: (sort: SortKey) => void;
   setFilter: (filter: Filter) => void;
   /** Bulk action: keep every detection at high confidence. */
@@ -33,10 +44,15 @@ type Store = {
   rejectAllLowConfidence: () => void;
 };
 
+function emptyAnnotation(): Annotation {
+  return { notes: '', tags: [] };
+}
+
 export const useDetectionStore = create<Store>((set, get) => ({
   state: { kind: 'idle' },
   sort: 'confidence',
   filter: 'all',
+  annotations: {},
 
   run: (transactions) => {
     set({ state: { kind: 'running' } });
@@ -46,10 +62,31 @@ export const useDetectionStore = create<Store>((set, get) => ({
     const seeded = result.subscriptions.map((s) =>
       s.confidence >= 0.85 ? { ...s, reviewState: 'kept' as ReviewState } : s,
     );
-    set({ state: { kind: 'done', subscriptions: seeded, meta: result.meta } });
+    set({ state: { kind: 'done', subscriptions: seeded, meta: result.meta }, annotations: {} });
   },
 
-  reset: () => set({ state: { kind: 'idle' }, sort: 'confidence', filter: 'all' }),
+  reset: () => set({ state: { kind: 'idle' }, sort: 'confidence', filter: 'all', annotations: {} }),
+
+  setNotes: (id, notes) => {
+    const cur = get().annotations[id] ?? emptyAnnotation();
+    set({ annotations: { ...get().annotations, [id]: { ...cur, notes } } });
+  },
+
+  addTag: (id, tag) => {
+    const t = tag.trim();
+    if (!t) return;
+    const cur = get().annotations[id] ?? emptyAnnotation();
+    if (cur.tags.includes(t)) return;
+    set({ annotations: { ...get().annotations, [id]: { ...cur, tags: [...cur.tags, t] } } });
+  },
+
+  removeTag: (id, tag) => {
+    const cur = get().annotations[id];
+    if (!cur) return;
+    set({
+      annotations: { ...get().annotations, [id]: { ...cur, tags: cur.tags.filter((t) => t !== tag) } },
+    });
+  },
 
   setReviewState: (id, next) => {
     const s = get().state;
@@ -94,7 +131,7 @@ export const useDetectionStore = create<Store>((set, get) => ({
 
 // ── Selectors (kept outside the store so they remain pure) ────────────────
 
-const COUNTS_INIT = { kept: 0, pending: 0, rejected: 0, total: 0 };
+const COUNTS_INIT = { kept: 0, pending: 0, rejected: 0, canceled: 0, total: 0 };
 
 export type ReviewCounts = typeof COUNTS_INIT;
 
@@ -103,6 +140,7 @@ export function countByReviewState(subs: readonly Subscription[]): ReviewCounts 
   for (const s of subs) {
     if (s.reviewState === 'kept') out.kept++;
     else if (s.reviewState === 'rejected') out.rejected++;
+    else if (s.reviewState === 'canceled') out.canceled++;
     else out.pending++;
   }
   return out;
@@ -122,6 +160,8 @@ export function applyFilter(subs: readonly Subscription[], filter: Filter): read
       return subs.filter((s) => s.reviewState === 'pending');
     case 'rejected':
       return subs.filter((s) => s.reviewState === 'rejected');
+    case 'canceled':
+      return subs.filter((s) => s.reviewState === 'canceled');
     case 'high':
       return subs.filter((s) => confidenceBand(s.confidence) === 'high');
     case 'low':

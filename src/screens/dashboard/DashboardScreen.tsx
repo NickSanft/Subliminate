@@ -115,6 +115,7 @@ export function DashboardScreen() {
               sort={sort}
               onSort={setSort}
               onShowAll={() => navigate('/subscriptions')}
+              navigateToDetail={(id) => navigate(`/subscription/${id}`)}
             />
           </section>
 
@@ -275,6 +276,7 @@ type SubscriptionTableProps = {
   sort: SortKey;
   onSort: (s: SortKey) => void;
   onShowAll: () => void;
+  navigateToDetail: (id: string) => void;
 };
 
 function SubscriptionTable({
@@ -283,6 +285,7 @@ function SubscriptionTable({
   sort,
   onSort,
   onShowAll,
+  navigateToDetail,
 }: SubscriptionTableProps) {
   const hidden = totalCount - subscriptions.length;
   return (
@@ -359,6 +362,7 @@ function SubscriptionTable({
           key={s.id}
           subscription={s}
           isLast={i === subscriptions.length - 1}
+          onSelect={() => navigateToDetail(s.id)}
         />
       ))}
       {hidden > 0 && (
@@ -384,7 +388,15 @@ function SubscriptionTable({
   );
 }
 
-function SubscriptionRow({ subscription, isLast }: { subscription: Subscription; isLast: boolean }) {
+function SubscriptionRow({
+  subscription,
+  isLast,
+  onSelect,
+}: {
+  subscription: Subscription;
+  isLast: boolean;
+  onSelect: () => void;
+}) {
   const sparkData = useMemo(() => {
     const series = subscription.transactions.slice(-12).map((t) => Math.abs(t.amount));
     return series.length >= 2 ? series : [Math.abs(subscription.currentAmount)];
@@ -397,14 +409,22 @@ function SubscriptionRow({ subscription, isLast }: { subscription: Subscription;
       : 0;
 
   return (
-    <div
+    <button
+      type="button"
       role="row"
+      onClick={onSelect}
       style={{
         display: 'grid',
         gridTemplateColumns: '2fr 0.9fr 0.7fr 0.8fr 1fr 0.4fr',
         alignItems: 'center',
         borderBottom: isLast ? 0 : '1px solid var(--line)',
         padding: '4px 0',
+        background: 'transparent',
+        border: 0,
+        width: '100%',
+        textAlign: 'left',
+        cursor: 'pointer',
+        color: 'inherit',
       }}
     >
       <div style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
@@ -450,7 +470,7 @@ function SubscriptionRow({ subscription, isLast }: { subscription: Subscription;
       >
         <Chevron direction="right" size={12} />
       </div>
-    </div>
+    </button>
   );
 }
 

@@ -32,10 +32,14 @@ export type Callout = OverlapCallout | IncreaseCallout;
  * detect (say) "Netflix + Hulu + Disney+" as a separate "streaming"
  * cluster; the categorization already does that work.
  */
-export function findOverlaps(subs: readonly Subscription[]): readonly OverlapCallout[] {
+export function findOverlaps(
+  subs: readonly Subscription[],
+  options: { threshold?: number } = {},
+): readonly OverlapCallout[] {
+  const threshold = options.threshold ?? 3;
   const byCategory = new Map<Category, Subscription[]>();
   for (const sub of subs) {
-    if (sub.reviewState === 'rejected') continue;
+    if (sub.reviewState === 'rejected' || sub.reviewState === 'canceled') continue;
     const c = categorize(sub.merchant);
     const bucket = byCategory.get(c);
     if (bucket) bucket.push(sub);
@@ -44,7 +48,7 @@ export function findOverlaps(subs: readonly Subscription[]): readonly OverlapCal
   const out: OverlapCallout[] = [];
   for (const [category, group] of byCategory) {
     if (category === 'Other') continue;
-    if (group.length < 3) continue;
+    if (group.length < threshold) continue;
     const monthly = group.reduce((sum, s) => sum + monthlyEquivalent(s), 0);
     out.push({
       kind: 'overlap',

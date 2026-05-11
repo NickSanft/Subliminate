@@ -4,6 +4,121 @@ All notable changes to Subliminate. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); pre-1.0 minor
 version tracks phase number.
 
+## [0.5.0] — 2026-05-11
+
+**Phase 5 — Subscription detail + Insights**
+
+### Added
+
+- Subscription detail page at `/subscription/:id`:
+  - Hero numbers: annual cost (with delta since last hike), current
+    monthly, lifetime spend in CSV
+  - **Price trajectory chart** (Recharts `LineChart` with `stepAfter`
+    interpolation, reference lines for each detected step). Step-line is
+    the right shape for subscription pricing: amounts hold flat between
+    hikes
+  - **Cadence calendar strip** — 12-month grid, charges as teal pips
+    (custom SVG; Recharts wouldn't earn its bytes for this)
+  - **Charge history table** sorted reverse-chronologically
+  - **Notes &amp; tags** editor, bound to the detection store; in-memory
+    only until Phase 7 persistence
+  - **Mark canceled / Reopen** action toggles `reviewState` and surfaces
+    the subscription in the Canceled screen
+- Insights page at `/insights`:
+  - **Overlap clusters** at threshold 2 (Dashboard stays at 3 for
+    actionability)
+  - **Might be forgotten** list with three honest heuristics: annual
+    auto-renew 4+ months out, stale-charge warnings from detection,
+    variable-amount monthly subs. Explicit copy: "Heuristic — we don't
+    have usage data."
+  - **YoY bar chart** (Recharts `BarChart`) — prior-year vs this-year
+    monthly spend. Renders nothing if there's less than 18 months of
+    data, with an explanation
+  - **Top 5 by annual cost** with proportional bars
+  - The tangible-comparison module ("X weeks of groceries") is
+    intentionally *not* shipped — the plan calls for opt-in only
+- Subscriptions list at `/subscriptions` (separated from Dashboard):
+  full kept set, sortable, rows click through to detail
+- Canceled screen at `/canceled`:
+  - Empty state with a "Browse subscriptions" CTA
+  - Otherwise: savings-summary card + list with reopen action
+- `src/lib/insights/insights.ts` — pure selectors
+  (`findForgottenCandidates`, `topByAnnual`, `yearOverYearSeries`)
+- `Subscription.reviewState` extended with a new `'canceled'` value
+  distinct from `'rejected'`. Rejected = not a real recurring charge.
+  Canceled = was real, user stopped paying for it. The Dashboard
+  surfaces neither; Canceled surfaces only canceled
+
+### Why this matters
+
+The product was a closed loop after Phase 4: upload → review →
+dashboard. Phase 5 opens the dashboard rows into something inspectable —
+per-subscription history with the price-step evidence the detection
+engine surfaced — and lifts the analytical findings (overlaps, likely-
+forgotten) into a dedicated view. The "honest framing" on the Forgotten
+list ("we don't have usage data") is load-bearing for the project's
+trust posture; the tool is rigorous about what it doesn't know.
+
+### Architecture
+
+- **Recharts is lazy-loaded.** Adding it to the main bundle pushed
+  initial-load JS from 64 KB to 193 KB brotli — over 2× our budget.
+  Routes that need it (`/subscription/:id`, `/insights`) are wrapped in
+  `React.lazy(...)` + `<Suspense>`; Vite emits a `CartesianChart-*.js`
+  chunk fetched only when one of those routes mounts. Dashboard,
+  Review, Subscriptions, Canceled stay snappy
+- Per-subscription notes/tags live in a new `annotations` map on the
+  detection store. In-memory only — persistence is Phase 7
+- The detail page renders as a route (not the modal-over-dashboard the
+  mockup proposed) — chose proper routing for portfolio clarity
+
+### Tests
+
+- 12 new insights-selector unit tests (forgotten heuristic, top-N share
+  calculation, YoY series shape)
+- 7 new Playwright tests:
+  - Click dashboard row → detail (heading, charge history, cadence)
+  - Mark canceled → appears in Canceled list
+  - Notes persist across SPA navigation
+  - Insights renders YoY + top 5 with real data; empty state cold
+  - Canceled empty-state when nothing canceled
+  - Privacy invariant through the full Phase 5 flow
+
+Important fix during this phase: hard-navigating to a route via
+`page.goto()` wipes the in-memory Zustand store. The new e2e helper
+`navigateTo()` SPA-clicks the sidebar links instead.
+
+### Bundle (split budgets)
+
+| Asset                     | Brotli   | Budget |
+| ------------------------- | -------- | ------ |
+| Main bundle (initial)     | 65.9 KB  | 85 KB  |
+| Recharts chunk (lazy)     | 86.3 KB  | 100 KB |
+| Detail screen chunk       |  8.7 KB  | 12 KB  |
+| Insights screen chunk     |  8.8 KB  | 12 KB  |
+| CSV worker (lazy)         |  8.6 KB  | 12 KB  |
+| CSS                       |  3.8 KB  |  6 KB  |
+
+Main bumped from 75 → 85 KB to absorb the four new screens; Recharts
+gets its own 100 KB budget and only loads on demand.
+
+### Pre-push checklist
+
+- ✅ typecheck, lint clean (full eslint cache cleared first)
+- ✅ 154/154 unit tests
+- ✅ 25/25 Playwright tests
+- ✅ build + all six size budgets pass
+- ✅ CI green on the push commit BEFORE tagging (per the
+  verify-CI-before-tag memory rule)
+
+### Limitations / not yet shipped
+
+- Notes/tags are cleared on tab close (Phase 7 persistence)
+- Sidebar "Upcoming renewals" still routes to a placeholder — the
+  30-day view lives on the Dashboard for now; full calendar deferred
+
+---
+
 ## [0.4.0] — 2026-05-11
 
 **Phase 4 — Dashboard**
