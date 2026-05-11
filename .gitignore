@@ -1,0 +1,36 @@
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Tests
+coverage
+playwright-report
+test-results
+.playwright
+
+# Build artifacts
+dist/bundle-manifest.json
+
+# Self-hosted webfonts (downloaded via `pnpm fetch-fonts`)
+public/fonts/*.woff2
+
+# TS incremental build info
+*.tsbuildinfo
+
+# Local Claude config
+.claude/

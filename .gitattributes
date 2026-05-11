@@ -1,0 +1,10 @@
+# Normalize text files to LF on commit, regardless of the contributor's
+# platform. Binary files (fonts, images) are explicitly tagged so git
+# never tries to "fix" them.
+* text=auto eol=lf
+
+*.woff2 binary
+*.png binary
+*.jpg binary
+*.ico binary
+*.pdf binary

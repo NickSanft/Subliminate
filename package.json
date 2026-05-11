@@ -1,0 +1,69 @@
+{
+  "name": "subliminate",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Privacy-first subscription audit. 100% client-side, verifiable.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:privacy": "playwright test privacy.spec.ts",
+    "size": "size-limit",
+    "fetch-fonts": "node scripts/fetch-fonts.mjs"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.27.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.48.0",
+    "@size-limit/preset-app": "^11.1.6",
+    "@tailwindcss/vite": "^4.0.0-beta.4",
+    "@testing-library/jest-dom": "^6.5.0",
+    "@testing-library/react": "^16.0.1",
+    "@types/node": "^22.7.0",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.8.0",
+    "@typescript-eslint/parser": "^8.8.0",
+    "@vitejs/plugin-react": "^4.3.2",
+    "eslint": "^9.12.0",
+    "eslint-plugin-react": "^7.37.1",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "globals": "^15.10.0",
+    "jsdom": "^25.0.1",
+    "prettier": "^3.3.3",
+    "size-limit": "^11.1.6",
+    "tailwindcss": "^4.0.0-beta.4",
+    "typescript": "^5.6.2",
+    "typescript-eslint": "^8.8.0",
+    "vite": "^5.4.8",
+    "vitest": "^2.1.2"
+  },
+  "size-limit": [
+    {
+      "name": "JS bundle (gzipped)",
+      "path": "dist/assets/*.js",
+      "limit": "65 KB"
+    },
+    {
+      "name": "CSS bundle (gzipped)",
+      "path": "dist/assets/*.css",
+      "limit": "6 KB"
+    }
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@10.32.1"
+}

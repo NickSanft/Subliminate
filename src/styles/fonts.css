@@ -1,0 +1,28 @@
+/* Self-hosted webfonts. CSP `font-src 'self'` is the invariant — no CDN.
+   See ADR-006. Files live in /public/fonts/ and are downloaded at install
+   time via `pnpm fetch-fonts`. If files are missing, browsers fall back to
+   the system stack declared in tokens.css (acceptable degraded state). */
+
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('/fonts/Geist[wght].woff2') format('woff2-variations');
+}
+
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/SourceSerif4[opsz,wght].woff2') format('woff2-variations');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('/fonts/JetBrainsMono[wght].woff2') format('woff2-variations');
+}

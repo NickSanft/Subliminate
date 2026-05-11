@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Subliminate · Capture</title>
+<link rel="stylesheet" href="tokens.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: #fff; }
+  #cap { display: block; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="cap"></div>
+
+<script type="text/babel" src="shared.jsx"></script>
+<script type="text/babel" src="screens/sketch.jsx"></script>
+<script type="text/babel" src="screens/empty-state.jsx"></script>
+<script type="text/babel" src="screens/landing.jsx"></script>
+<script type="text/babel" src="screens/upload.jsx"></script>
+<script type="text/babel" src="screens/review.jsx"></script>
+<script type="text/babel" src="screens/dashboard.jsx"></script>
+<script type="text/babel" src="screens/detail.jsx"></script>
+<script type="text/babel" src="screens/insights.jsx"></script>
+<script type="text/babel" src="screens/privacy.jsx"></script>
+<script type="text/babel" src="screens/settings.jsx"></script>
+<script type="text/babel" src="screens/network-states.jsx"></script>
+<script type="text/babel" src="screens/components.jsx"></script>
+
+<script type="text/babel">
+const SCREENS = {
+  'landing-quiet':       { c: LandingQuiet,       w: 1440, h: 1100 },
+  'landing-declarative': { c: LandingDeclarative, w: 1440, h: 1100 },
+  'upload-empty':        { c: UploadEmpty,        w: 1440, h: 900 },
+  'upload-mapping':      { c: UploadMapping,      w: 1440, h: 900 },
+  'review':              { c: Review,             w: 1440, h: 1000 },
+  'dashboard-light':     { c: () => <Dashboard theme="light" />, w: 1440, h: 1024 },
+  'dashboard-dark':      { c: () => <Dashboard theme="dark" />,  w: 1440, h: 1024 },
+  'detail':              { c: Detail,             w: 1440, h: 1024 },
+  'insights':            { c: Insights,           w: 1440, h: 1100 },
+  'privacy-light':       { c: () => <Privacy theme="light" />, w: 1440, h: 1280 },
+  'privacy-dark':        { c: () => <Privacy theme="dark"  />, w: 1440, h: 1280 },
+  'settings':            { c: Settings,           w: 1440, h: 950 },
+  'empty-canceled':      { c: EmptyState,         w: 1100, h: 600 },
+  'network-states':      { c: NetworkStates,      w: 760,  h: 620 },
+  'components':          { c: ComponentSheet,     w: 1440, h: 1700 },
+};
+
+window.__renderScreen = (key) => {
+  const s = SCREENS[key];
+  if (!s) { console.error('no screen', key); return; }
+  const C = s.c;
+  document.body.style.width = s.w + 'px';
+  const root = document.getElementById('cap');
+  root.style.width = s.w + 'px';
+  root.style.height = s.h + 'px';
+  ReactDOM.createRoot(root).render(
+    <>
+      <SketchDefs />
+      <div style={{ width: s.w, height: s.h }}>
+        <C />
+      </div>
+    </>
+  );
+};
+
+// Initial render — first screen
+window.__renderScreen('landing-quiet');
+</script>
+</body>
+</html>

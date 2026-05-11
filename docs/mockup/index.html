@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Subliminate · Design</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="stylesheet" href="tokens.css" />
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f0eee9; }
+  body { font-family: 'Geist', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- Design canvas runtime -->
+<script type="text/babel" src="design-canvas.jsx"></script>
+<!-- Shared atoms: NetworkPanel, AppShell, Logo, Seal -->
+<script type="text/babel" src="shared.jsx"></script>
+<!-- Sketch flair: squiggles, doodles, cat avatar -->
+<script type="text/babel" src="screens/sketch.jsx"></script>
+<script type="text/babel" src="screens/empty-state.jsx"></script>
+<!-- Screens -->
+<script type="text/babel" src="screens/landing.jsx"></script>
+<script type="text/babel" src="screens/upload.jsx"></script>
+<script type="text/babel" src="screens/review.jsx"></script>
+<script type="text/babel" src="screens/dashboard.jsx"></script>
+<script type="text/babel" src="screens/detail.jsx"></script>
+<script type="text/babel" src="screens/insights.jsx"></script>
+<script type="text/babel" src="screens/privacy.jsx"></script>
+<script type="text/babel" src="screens/settings.jsx"></script>
+<script type="text/babel" src="screens/network-states.jsx"></script>
+<script type="text/babel" src="screens/components.jsx"></script>
+
+<script type="text/babel">
+const { useState } = React;
+
+function App() {
+  return (
+    <>
+    <SketchDefs />
+    <DesignCanvas>
+      <DCSection id="landing" title="01 · Landing page" subtitle="The privacy promise comes first. Two directions — restrained and declarative.">
+        <DCArtboard id="landing-quiet" label="Quiet · restrained hero" width={1440} height={1100}>
+          <LandingQuiet />
+        </DCArtboard>
+        <DCArtboard id="landing-declarative" label="Declarative · evidence-as-hero" width={1440} height={1100}>
+          <LandingDeclarative />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="onboarding" title="02 · Onboarding" subtitle="CSV in → mapping → review. Three screens before the user reaches the product.">
+        <DCArtboard id="upload-empty" label="Upload · empty" width={1440} height={900}>
+          <UploadEmpty />
+        </DCArtboard>
+        <DCArtboard id="upload-mapping" label="Upload · column mapping" width={1440} height={900}>
+          <UploadMapping />
+        </DCArtboard>
+        <DCArtboard id="review" label="Review detected subscriptions" width={1440} height={1000}>
+          <Review />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="app" title="03 · Main app" subtitle="Dashboard, subscription detail, insights. Sidebar shell, persistent network pill.">
+        <DCArtboard id="dashboard-light" label="Dashboard · light" width={1440} height={1024}>
+          <Dashboard theme="light" />
+        </DCArtboard>
+        <DCArtboard id="dashboard-dark" label="Dashboard · dark" width={1440} height={1024}>
+          <Dashboard theme="dark" />
+        </DCArtboard>
+        <DCArtboard id="detail" label="Subscription detail (modal over dashboard)" width={1440} height={1024}>
+          <Detail />
+        </DCArtboard>
+        <DCArtboard id="insights" label="Insights" width={1440} height={1100}>
+          <Insights />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="privacy" title="04 · Privacy & verification" subtitle="The centerpiece. Evidence, not marketing copy.">
+        <DCArtboard id="privacy-light" label="Privacy · light" width={1440} height={1280}>
+          <Privacy theme="light" />
+        </DCArtboard>
+        <DCArtboard id="privacy-dark" label="Privacy · dark" width={1440} height={1280}>
+          <Privacy theme="dark" />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="other" title="05 · Settings & support states">
+        <DCArtboard id="settings" label="Settings & data management" width={1440} height={950}>
+          <Settings />
+        </DCArtboard>
+        <DCArtboard id="empty-canceled" label="Empty state · canceled subscriptions" width={1100} height={600}>
+          <EmptyState />
+        </DCArtboard>
+        <DCArtboard id="network-states" label="Network activity panel · idle + expanded" width={760} height={620}>
+          <NetworkStates />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="components" title="06 · Component spec sheet" subtitle="Type scale, colors, spacing, buttons, inputs, money treatment.">
+        <DCArtboard id="components" label="Component spec sheet" width={1440} height={1700}>
+          <ComponentSheet />
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
