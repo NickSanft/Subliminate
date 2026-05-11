@@ -17,21 +17,25 @@
     "test:e2e": "playwright test",
     "test:privacy": "playwright test privacy.spec.ts",
     "size": "size-limit",
-    "fetch-fonts": "node scripts/fetch-fonts.mjs"
+    "fetch-fonts": "node scripts/fetch-fonts.mjs",
+    "fixtures:generate": "node scripts/generate-fixtures.mjs"
   },
   "dependencies": {
+    "papaparse": "^5.5.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.27.0"
+    "react-router-dom": "^6.27.0",
+    "zustand": "^5.0.13"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
+    "@eslint/js": "^9.39.4",
     "@playwright/test": "^1.48.0",
     "@size-limit/preset-app": "^11.1.6",
     "@tailwindcss/vite": "^4.0.0-beta.4",
     "@testing-library/jest-dom": "^6.5.0",
     "@testing-library/react": "^16.0.1",
     "@types/node": "^22.7.0",
+    "@types/papaparse": "^5.5.2",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^8.8.0",
@@ -52,12 +56,17 @@
   },
   "size-limit": [
     {
-      "name": "JS bundle (gzipped)",
-      "path": "dist/assets/*.js",
-      "limit": "65 KB"
+      "name": "Main bundle (initial load)",
+      "path": "dist/assets/index-*.js",
+      "limit": "75 KB"
     },
     {
-      "name": "CSS bundle (gzipped)",
+      "name": "CSV worker (lazy)",
+      "path": "dist/assets/csv.worker-*.js",
+      "limit": "12 KB"
+    },
+    {
+      "name": "CSS bundle",
       "path": "dist/assets/*.css",
       "limit": "6 KB"
     }

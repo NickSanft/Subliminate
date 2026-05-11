@@ -5,7 +5,7 @@ your bank; Subliminate finds the recurring charges, surfaces price hikes,
 and runs entirely in your browser tab. The Network Activity panel reads
 zero, because zero is the truth.
 
-> **Status:** Phase 1 of 8. Design system, app shell, privacy invariant in place. Detection, dashboard, and the verifiable-privacy centerpiece ship in later phases. See [CHANGELOG.md](CHANGELOG.md).
+> **Status:** Phase 2 of 8. CSV ingestion (Web Worker + auto-detection) on top of the Phase 1 shell. Detection, dashboard, and the verifiable-privacy centerpiece ship in later phases. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Verify it in 30 seconds
 
@@ -109,7 +109,7 @@ tests/
 | Phase | Theme                                              | Tag    |
 | ----- | -------------------------------------------------- | ------ |
 | 1     | Scaffolding & design system                        | v0.1.0 ← shipped |
-| 2     | CSV ingestion (Web Worker, column mapping)         | v0.2.0 |
+| 2     | CSV ingestion (Web Worker, column mapping)         | v0.2.0 ← shipped |
 | 3     | Recurring-charge detection + Review screen         | v0.3.0 |
 | 4     | Dashboard                                          | v0.4.0 |
 | 5     | Subscription detail + Insights                     | v0.5.0 |
@@ -130,4 +130,6 @@ tests/
 See [docs/adr/](docs/adr/README.md). ADRs that exist so far:
 
 - [ADR-0001 — No backend](docs/adr/0001-no-backend.md)
+- [ADR-0002 — CSV-only ingestion](docs/adr/0002-csv-only-ingestion.md)
 - [ADR-0006 — Self-hosted fonts](docs/adr/0006-self-hosted-fonts.md)
+- [ADR-0009 — Generic CSV mapper over bank presets](docs/adr/0009-generic-csv-mapper-over-bank-presets.md)

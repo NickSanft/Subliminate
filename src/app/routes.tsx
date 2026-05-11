@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { LandingScreen } from '@/screens/landing/LandingScreen';
 import { ComponentsShowcase } from '@/screens/components/ComponentsShowcase';
+import { UploadScreen } from '@/screens/upload/UploadScreen';
 import { Placeholder } from '@/screens/placeholder/Placeholder';
 
 export function AppRoutes() {
@@ -8,7 +9,7 @@ export function AppRoutes() {
     <Routes>
       <Route path="/" element={<LandingScreen />} />
       <Route path="/components" element={<ComponentsShowcase />} />
-      <Route path="/upload" element={<Placeholder title="Upload" note="CSV ingestion ships in Phase 2." />} />
+      <Route path="/upload" element={<UploadScreen />} />
       <Route path="/dashboard" element={<Placeholder title="Dashboard" note="Ships in Phase 4." />} />
       <Route path="/subscriptions" element={<Placeholder title="Subscriptions" note="Ships in Phase 3." />} />
       <Route path="/insights" element={<Placeholder title="Insights" note="Ships in Phase 5." />} />
