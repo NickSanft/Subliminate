@@ -19,7 +19,7 @@ decision is probably too small for an ADR.
 | [0004](0004-service-worker-fetch-trap.md) | Service-worker fetch trap | Accepted | 6     |
 | [0005](0005-reproducible-builds-and-bundle-hashes.md) | Reproducible builds and bundle hashes | Accepted | 6 |
 | [0006](0006-self-hosted-fonts.md) | Self-hosted fonts                 | Accepted | 1     |
-| 0007 | Ephemeral-by-default persistence                     | Pending  | 7     |
+| [0007](0007-ephemeral-by-default-persistence.md) | Ephemeral-by-default persistence | Accepted | 7 |
 | [0008](0008-recurring-charge-detection-heuristics.md) | Recurring-charge detection heuristics | Accepted | 3 |
 | [0009](0009-generic-csv-mapper-over-bank-presets.md) | Generic CSV mapper over bank presets | Accepted | 2 |
 

@@ -81,6 +81,13 @@ export const useParserStore = create<Store>((set, get) => ({
     const current = get().state;
     if (current.kind !== 'mapped') return;
     const transactions = applyMapping(current.parsed.rows, current.mapping);
+    // Lazy-import to avoid a cycle (persistence.store imports
+    // parser.store).
+    void import('./persistence.store').then((mod) =>
+      mod.usePersistenceStore
+        .getState()
+        .recordSavedMapping(current.parsed.meta.fileName, current.parsed.headers, current.mapping),
+    );
     set({
       state: {
         kind: 'ready',

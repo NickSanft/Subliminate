@@ -4,6 +4,132 @@ All notable changes to Subliminate. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); pre-1.0 minor
 version tracks phase number.
 
+## [0.7.0] — 2026-05-11
+
+**Phase 7 — Settings + ephemeral-first persistence**
+
+### Added
+
+- **Settings screen** at `/settings` with five grouped sections:
+  - **Persistence card** — the prominent, opt-in "Remember my data
+    between sessions" toggle. Off by default; turning it on triggers a
+    confirmation modal explaining IndexedDB storage scope, lack of
+    encryption-at-rest, and the wipe path
+  - **Your data** — current row/sub counts, two download actions
+    (CSV with subscription roster, JSON with full state), and the
+    Wipe-everything button with its own confirmation modal
+  - **Saved CSV mappings** — independently togglable. When enabled,
+    column mappings confirmed on the Upload screen are remembered by
+    schema fingerprint (sorted-headers hash, not bank name). The list
+    is viewable and deletable here
+  - **Appearance** — theme tri-toggle (light / dark / system) reusing
+    the existing ThemeProvider
+  - **About this build** — version, license, and the bundle-hash short
+    digest from the production manifest
+- **Persistence library** ([src/lib/persistence/](src/lib/persistence)):
+  - `idb.ts` — typed `idb` wrapper with two object stores (`state`,
+    `mappings`)
+  - `schema.ts` — versioned `PersistedState` blob, plus
+    `fingerprintHeaders()` for stable mapping ids
+  - `export.ts` — pure CSV / JSON serializers + `downloadBlob()` via
+    `Blob` + object URL. No upload anywhere
+- **`persistence.store.ts`** — opt-in orchestrator. Hydrates on boot
+  when enabled; subscribes to parser + detection stores to mirror
+  changes into IDB; exposes `wipe()` which clears IDB *and* resets the
+  in-memory stores *and* clears the toggles
+- **`Switch`** and **`Modal`** primitives added to
+  `src/components/primitives/`. Modal is keyboard-dismissable
+  (Escape) and supports a `tone="danger"` variant for destructive
+  confirmations
+- ADR-0007 — Ephemeral-by-default persistence. Includes an explicit
+  threat model with separate lists for what *is* and *is not* defended
+  against. Shared computer, malicious extension, cloud-synced browser
+  profile, and the user themselves all called out as out-of-scope
+
+### Why this matters
+
+After Phase 6 made the privacy invariant verifiable, Phase 7 had to
+solve the UX cost of *that* posture: a power user who comes back to
+the audit shouldn't have to re-upload every time. Defaulting to
+ephemeral preserves the privacy posture; the explicit opt-in lets the
+user trade some privacy for convenience with full knowledge of what
+they're agreeing to. The confirmation copy is the load-bearing part —
+it tells the user exactly what "remember" means in plain language.
+
+### Architecture
+
+- The toggle lives in `localStorage` (same sanctioned non-ephemeral
+  key family as theme). The actual state snapshot lives in IDB under
+  a `schemaVersion: 1` blob
+- Parser/detection store subscriptions write the latest snapshot on
+  every change when persistence is on. Async writes don't block the
+  UI
+- Saved mappings use a deterministic header fingerprint
+  (`fingerprintHeaders(headers)`): case-insensitive, whitespace-
+  normalized, order-independent. Two CSVs with the same column set
+  share an id; no bank name is ever stored
+- Late dynamic import from `parser.store → persistence.store` breaks
+  the module-load cycle (persistence.store imports parser.store
+  statically). The function-time import resolves cleanly
+
+### Tests
+
+- 8 new unit tests:
+  - `fingerprintHeaders` — case, whitespace, order invariance + uniqueness
+  - `subscriptionsToCsv` — header row, CSV escape for commas/quotes,
+    cadence-aware monthly/annual computation
+  - `stateToJson` — valid JSON with trailing newline
+- 6 new Playwright tests on Settings:
+  - Renders all sections; toggle off by default
+  - Toggle opens a confirmation modal that user can cancel
+  - Confirming flips the toggle on
+  - Persisted data survives a page reload (this is the load-bearing
+    e2e — proves IDB hydration round-trips)
+  - Wipe button clears state and resets the toggle
+  - End-to-end privacy invariant: toggle + reload = zero non-self
+    requests
+
+### Bundle (split budgets)
+
+| Asset                     | Brotli   | Budget |
+| ------------------------- | -------- | ------ |
+| Main bundle (initial)     | 74.5 KB  | 85 KB  |
+| Recharts chunk (lazy)     | 86.3 KB  | 100 KB |
+| Detail screen chunk       |  8.7 KB  | 12 KB  |
+| Insights screen chunk     |  8.7 KB  | 12 KB  |
+| CSV worker (lazy)         |  8.6 KB  | 12 KB  |
+| CSS                       |  3.8 KB  |  6 KB  |
+
+Main grew ~5 KB (Settings screen + Modal primitive + persistence
+plumbing). 10 KB headroom remaining ahead of Phase 8's polish pass.
+
+### Pre-push checklist
+
+- ✅ typecheck, lint clean
+- ✅ 175/175 unit tests
+- ✅ 36/36 Playwright tests
+- ✅ build + all six size budgets pass
+- ✅ `pnpm verify:repro` — digests match
+- ✅ Will verify CI green via `gh run view` before tagging
+
+### ADRs added
+
+- [ADR-0007 — Ephemeral-by-default persistence](docs/adr/0007-ephemeral-by-default-persistence.md)
+
+### Limitations / not yet shipped
+
+- The hydration-on-reload UX briefly flashes the landing/empty state
+  before IDB resolves. Acceptable for a defensive ephemeral default;
+  could be smoothed with a loading splash if it becomes noticeable
+- Storage-quota warnings aren't surfaced. Browsers cap origin
+  storage; multi-year statements could approach the cap. Add when
+  someone hits it
+- Re-import from exported JSON isn't a one-click flow yet — the user
+  can hand-drop the file into the parser, but the JSON loader is its
+  own UI. Worth doing once we have a clear use case
+
+---
+
 ## [0.6.0] — 2026-05-11
 
 **Phase 6 — Privacy architecture (the centerpiece)**
