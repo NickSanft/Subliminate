@@ -20,7 +20,7 @@ decision is probably too small for an ADR.
 | 0005 | Reproducible builds and bundle hashes                | Pending  | 6     |
 | [0006](0006-self-hosted-fonts.md) | Self-hosted fonts                 | Accepted | 1     |
 | 0007 | Ephemeral-by-default persistence                     | Pending  | 7     |
-| 0008 | Recurring-charge detection heuristics                | Pending  | 3     |
+| [0008](0008-recurring-charge-detection-heuristics.md) | Recurring-charge detection heuristics | Accepted | 3 |
 | [0009](0009-generic-csv-mapper-over-bank-presets.md) | Generic CSV mapper over bank presets | Accepted | 2 |
 
 See [template.md](template.md) when adding a new record.

@@ -5,7 +5,7 @@ your bank; Subliminate finds the recurring charges, surfaces price hikes,
 and runs entirely in your browser tab. The Network Activity panel reads
 zero, because zero is the truth.
 
-> **Status:** Phase 2 of 8. CSV ingestion (Web Worker + auto-detection) on top of the Phase 1 shell. Detection, dashboard, and the verifiable-privacy centerpiece ship in later phases. See [CHANGELOG.md](CHANGELOG.md).
+> **Status:** Phase 3 of 8. Detection engine and Review screen on top of the Phase 1–2 shell + CSV pipeline. Dashboard and the verifiable-privacy centerpiece ship in later phases. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Verify it in 30 seconds
 
@@ -110,7 +110,7 @@ tests/
 | ----- | -------------------------------------------------- | ------ |
 | 1     | Scaffolding & design system                        | v0.1.0 ← shipped |
 | 2     | CSV ingestion (Web Worker, column mapping)         | v0.2.0 ← shipped |
-| 3     | Recurring-charge detection + Review screen         | v0.3.0 |
+| 3     | Recurring-charge detection + Review screen         | v0.3.0 ← shipped |
 | 4     | Dashboard                                          | v0.4.0 |
 | 5     | Subscription detail + Insights                     | v0.5.0 |
 | 6     | Privacy architecture: SW fetch trap, repro builds  | v0.6.0 |
@@ -132,4 +132,5 @@ See [docs/adr/](docs/adr/README.md). ADRs that exist so far:
 - [ADR-0001 — No backend](docs/adr/0001-no-backend.md)
 - [ADR-0002 — CSV-only ingestion](docs/adr/0002-csv-only-ingestion.md)
 - [ADR-0006 — Self-hosted fonts](docs/adr/0006-self-hosted-fonts.md)
+- [ADR-0008 — Recurring-charge detection heuristics](docs/adr/0008-recurring-charge-detection-heuristics.md)
 - [ADR-0009 — Generic CSV mapper over bank presets](docs/adr/0009-generic-csv-mapper-over-bank-presets.md)

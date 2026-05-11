@@ -22,7 +22,7 @@ export function UploadScreen() {
 
   function onConfirm() {
     confirmMapping();
-    navigate('/dashboard');
+    navigate('/review');
   }
 
   return (

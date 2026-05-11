@@ -4,6 +4,104 @@ All notable changes to Subliminate. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); pre-1.0 minor
 version tracks phase number.
 
+## [0.3.0] — 2026-05-11
+
+**Phase 3 — Recurring-charge detection + Review screen**
+
+### Added
+
+- `src/lib/detection/` — the six-stage detection pipeline (ADR-0008):
+  - `normalize.ts` — small-rules-table merchant normalization
+    (`NETFLIX.COM`, `NFLX*NETFLIX`, `NETFLIX 866-579-7172` → `Netflix`)
+  - `cadence.ts` — median-delta + variance-gated cadence inference
+    (weekly / monthly / quarterly / semi-annual / annual)
+  - `stability.ts` — coefficient-of-variation amount-stability check
+    with a monotonic-increase bonus for normal price-hike patterns
+  - `trajectory.ts` — sustained price-step detection that drives the
+    Dashboard "+$4/mo since March" callouts and the detail-page chart
+  - `confidence.ts` — weighted scoring (cadence 45% + stability 30% +
+    charge-count factor 25%), banded Low/Med/High at 0.5 and 0.8
+  - `detect.ts` — orchestrator producing `Subscription[]` sorted by
+    descending confidence
+- `src/stores/detection.store.ts` — Zustand store with confirm/reject,
+  filters (`all` / `kept` / `pending` / `rejected` / `high` / `low`),
+  sort modes (confidence / annual / monthly / alphabetical / cadence),
+  and bulk actions
+- Review screen ([ReviewScreen.tsx](src/screens/review/ReviewScreen.tsx)):
+  - Stats row with kept / pending / rejected / annual-spend tiles
+  - Filter pills, sort dropdown, table with per-row confidence meter
+    and accessible keep/reject toggle
+  - Sticky-footer "Continue to dashboard" CTA shows the live
+    annualized-spend estimate for the kept set
+- Upload-confirm now navigates to `/review`; detection auto-runs on land
+
+### Why it matters
+
+This is the core algorithmic surface of the product. Phase 1 made it
+pretty, Phase 2 fed it data, Phase 3 makes it useful. The detection
+pipeline is what a hiring manager will read first — every stage is a
+pure function with its own unit tests, and the precision/recall targets
+against the committed fixture are enforced by CI.
+
+### Architecture
+
+- Detection runs on the main thread. Sub-500ms on 1,184 rows; the worker
+  pattern is already in place if we need it for multi-year imports
+- Every stage is independently importable and tested
+- `Subscription.confidence` is bounded to [0, 0.99] — there's always a
+  tail. The UI presents it as a percentage with a colored meter,
+  surfacing rather than hiding model uncertainty
+
+### Tests
+
+- 40 detection unit tests covering normalization (13 variants), cadence
+  inference (5 patterns + variance gate), amount stability (constant /
+  variable / monotonic), price-step detection (sustained vs. one-off),
+  confidence scoring, and annualized-cost math
+- 6 characterization tests against `chase_2024.csv`:
+  - Recall ≥80% on the 12 planted subscriptions
+  - Precision ≥95% on high-confidence (>0.8) detections
+  - Correct cadence per detected subscription
+  - Netflix and Adobe price-hike steps detected
+  - Runtime <500 ms
+  - Stable descending-confidence sort
+- 4 new Playwright tests: full upload → review flow, "keep all high",
+  filter pills, and end-to-end privacy invariant (`/upload → /review →
+  /dashboard` with zero non-self requests)
+
+### Bundle
+
+| Asset       | Brotli  | Budget |
+| ----------- | ------- | ------ |
+| Main JS     | 60.8 KB | 75 KB  |
+| CSV worker  | 8.6 KB  | 12 KB  |
+| CSS         | 3.8 KB  | 6 KB   |
+
+The Review screen + detection library added ~5 KB to the main bundle.
+14 KB of headroom remaining ahead of Phase 4's Recharts integration.
+
+### Pre-push checklist
+
+- ✅ typecheck, lint clean
+- ✅ 105/105 unit (was 65; +40 detection)
+- ✅ 14/14 Playwright (was 10; +4 review-flow)
+- ✅ build + 3-bucket size budgets all pass
+
+### ADRs added
+
+- [ADR-0008 — Recurring-charge detection heuristics](docs/adr/0008-recurring-charge-detection-heuristics.md)
+
+### Limitations / not yet shipped
+
+- The "Continue to dashboard" CTA navigates to a still-placeholder
+  Dashboard. Phase 4 fills it.
+- No subscription-detail page yet (Phase 5). Clicking a row in the
+  Review list currently does nothing.
+- Detection runs on the main thread. Up to ~5,000 rows is comfortable;
+  multi-year imports may want the worker treatment
+
+---
+
 ## [0.2.0] — 2026-05-11
 
 **Phase 2 — CSV ingestion**
