@@ -4,6 +4,115 @@ All notable changes to Subliminate. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); pre-1.0 minor
 version tracks phase number.
 
+## [0.4.0] — 2026-05-11
+
+**Phase 4 — Dashboard**
+
+### Added
+
+- Dashboard screen ([DashboardScreen.tsx](src/screens/dashboard/DashboardScreen.tsx))
+  consuming the kept-subscription set from the detection store:
+  - 4-tile stats row: monthly spend, annual run-rate, active count,
+    average per subscription (the mockup's YoY tile is deferred until
+    Phase 5 has the multi-year fixture)
+  - Inline callouts: category-overlap detection ("3 entertainment
+    services overlap"), most-recent price-increase callout
+  - Top-10 subscription table with merchant avatar, category badge,
+    monthly cost, annualized cost (with hike-delta marker), 12-charge
+    sparkline (clay if trending up), sort dropdown
+  - Sticky aside: stacked-bar category breakdown, 30-day renewals
+    timeline (custom SVG), hero "What this costs you" card
+- `src/lib/categories/` — small rules-table categorizer (Software /
+  Entertainment / News / Cloud / Fitness / Shopping / Other) plus
+  `annualByCategory()` aggregator. Surfaces "Other" honestly when no
+  rule matches.
+- `src/lib/dashboard/callouts.ts` — `findOverlaps()` and
+  `findRecentIncreases()` selectors over the kept set. Pure functions,
+  unit-tested.
+- `src/lib/dashboard/renewals.ts` — projects the next 30 days of
+  renewals from each subscription's `lastSeen` + cadence.
+- Dashboard primitives: `StatCard`, `Callout`, `CategoryBar`,
+  `RenewalsTimeline`. Custom SVG / CSS for both charts — see below.
+- Sidebar now reflects the current parsed-CSV file from the parser
+  store, and shows live counts for kept / canceled subscriptions
+
+### Why this matters
+
+This is the screen the user ends up on after the audit completes — the
+payoff for the upload-and-confirm workflow. Phase 1–3 made the
+pipeline; Phase 4 makes the result legible. The category breakdown and
+overlap callouts are where the "what should I cancel?" decision starts.
+
+### Design choice: custom charts, no Recharts (yet)
+
+The IMPLEMENTATION_PLAN.md called Recharts as the chart library for the
+category breakdown. After building both shapes, the custom horizontal
+stacked-bar reads cleaner than a Recharts `BarChart` would for this
+specific need (categorical totals + legend, no axis ticks, no
+interactivity beyond `title=`). The renewals timeline is custom SVG
+because the x-positions aren't uniform — events fall on specific days
+within a fixed 30-day window. Recharts will earn its slot in Phase 5
+for the price-trajectory line chart and the YoY Insights view, where a
+proper axis and tooltip pay off.
+
+### Tests
+
+- 19 categorization unit tests (rule coverage × 18, deterministic order)
+- 14 callout-selector unit tests:
+  - Overlap detection (3+ kept threshold, ignores rejected, ignores
+    "Other", monthly-equivalent sum)
+  - Recent increases (most recent in window, ignores decreases, ignores
+    stale changes, null when none)
+  - Formatters (overlap merchant truncation + total, increase month
+    formatting — UTC pinned to avoid CI-vs-local timezone drift)
+  - Renewals projection (monthly cadence ~30 days, skips rejected,
+    excludes >30 days, ascending sort)
+- 4 new Playwright tests:
+  - Full upload → review → dashboard, all panels render
+  - Empty-state when hitting `/dashboard` cold
+  - Sort dropdown keeps the table populated
+  - End-to-end privacy invariant covering the full happy path
+
+### Bundle
+
+| Asset       | Brotli  | Budget |
+| ----------- | ------- | ------ |
+| Main JS     | 64.2 KB | 75 KB  |
+| CSV worker  | 8.6 KB  | 12 KB  |
+| CSS         | 3.8 KB  | 6 KB   |
+
+Dashboard added ~3.4 KB to the main bundle. Comfortable headroom for
+Phase 5's Recharts import.
+
+### Pre-push checklist
+
+- ✅ typecheck, lint clean
+- ✅ 142/142 unit (was 105; +37 categorization + callouts + renewals)
+- ✅ 18/18 Playwright (was 14; +4 dashboard)
+- ✅ build + 3-bucket size budgets all pass
+
+### ADRs
+
+No new ADR this phase — the architecture is consistent with the
+existing detection-store contract. The chart-tech decision ("custom
+SVG for now, Recharts in Phase 5 where it pays off") is captured in
+this CHANGELOG entry; if it sticks past Phase 5 we'll promote it.
+
+### Limitations / not yet shipped
+
+- Per-subscription category override is unimplemented (Phase 4
+  acceptance says "let the user override per-subscription"). The
+  default rules cover the common cases; overrides become useful once
+  persistence lands in Phase 7
+- Subscription detail page (Phase 5) — clicking a row still does
+  nothing
+- Insights screen reuses the dashboard route for now; Phase 5 splits
+  them
+- Responsive at desktop only — narrow viewports work but aren't
+  audited; Phase 5 sweep will tighten the 768/1024 breakpoints
+
+---
+
 ## [0.3.0] — 2026-05-11
 
 **Phase 3 — Recurring-charge detection + Review screen**

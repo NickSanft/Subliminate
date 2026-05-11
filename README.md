@@ -5,7 +5,7 @@ your bank; Subliminate finds the recurring charges, surfaces price hikes,
 and runs entirely in your browser tab. The Network Activity panel reads
 zero, because zero is the truth.
 
-> **Status:** Phase 3 of 8. Detection engine and Review screen on top of the Phase 1–2 shell + CSV pipeline. Dashboard and the verifiable-privacy centerpiece ship in later phases. See [CHANGELOG.md](CHANGELOG.md).
+> **Status:** Phase 4 of 8. Dashboard now consumes the detection result — stats row, category breakdown, 30-day renewals timeline, inline overlap/price-change callouts. The verifiable-privacy centerpiece ships in Phase 6. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Verify it in 30 seconds
 
@@ -111,7 +111,7 @@ tests/
 | 1     | Scaffolding & design system                        | v0.1.0 ← shipped |
 | 2     | CSV ingestion (Web Worker, column mapping)         | v0.2.0 ← shipped |
 | 3     | Recurring-charge detection + Review screen         | v0.3.0 ← shipped |
-| 4     | Dashboard                                          | v0.4.0 |
+| 4     | Dashboard                                          | v0.4.0 ← shipped |
 | 5     | Subscription detail + Insights                     | v0.5.0 |
 | 6     | Privacy architecture: SW fetch trap, repro builds  | v0.6.0 |
 | 7     | Settings + ephemeral-first persistence             | v0.7.0 |
