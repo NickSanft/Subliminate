@@ -5,6 +5,7 @@ import { Chip } from '@/components/primitives/Chip';
 import { Button } from '@/components/primitives/Button';
 import { NetworkPanel } from '@/components/network/NetworkPanel';
 import { useParserStore } from '@/stores/parser.store';
+import { usePersistenceStore } from '@/stores/persistence.store';
 import type { Mapping, ParsedCsv, ParseError, Transaction } from '@/lib/csv';
 import { UploadStepper } from './UploadStepper';
 import { DropZone } from './DropZone';
@@ -239,19 +240,7 @@ function MappingState({ parsed, mapping, preview, onUpdateMapping, onConfirm, on
           gap: 24,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, maxWidth: 540 }}>
-          <label style={{ fontSize: 13, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-            <input type="checkbox" disabled aria-label="Remember this mapping" style={{ marginTop: 2 }} />
-            <span>
-              <span style={{ color: 'var(--ink-4)', fontWeight: 500, display: 'block', marginBottom: 2 }}>
-                Remember this mapping
-              </span>
-              <span style={{ color: 'var(--ink-2)', fontSize: 12.5, lineHeight: 1.5 }}>
-                Saved CSV mappings ship in Phase 7 (Settings). Until then, this toggle is a placeholder.
-              </span>
-            </span>
-          </label>
-        </div>
+        <RememberMappingToggle />
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <Button variant="ghost" onClick={onReset}>
             This isn’t right
@@ -272,6 +261,35 @@ function MappingState({ parsed, mapping, preview, onUpdateMapping, onConfirm, on
         }
       />
     </>
+  );
+}
+
+function RememberMappingToggle() {
+  const enabled = usePersistenceStore((s) => s.mappingsEnabled);
+  const setEnabled = usePersistenceStore((s) => s.setMappingsEnabled);
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, maxWidth: 540 }}>
+      <label style={{ fontSize: 13, display: 'flex', gap: 10, alignItems: 'flex-start', cursor: 'pointer' }}>
+        <input
+          type="checkbox"
+          checked={enabled}
+          onChange={(e) => setEnabled(e.target.checked)}
+          aria-label="Remember this mapping"
+          data-testid="remember-mapping"
+          style={{ marginTop: 2, cursor: 'pointer' }}
+        />
+        <span>
+          <span style={{ color: 'var(--ink-4)', fontWeight: 500, display: 'block', marginBottom: 2 }}>
+            Remember this mapping
+          </span>
+          <span style={{ color: 'var(--ink-2)', fontSize: 12.5, lineHeight: 1.5 }}>
+            Save the column-role assignments (headers only — never the transactions). Next time a
+            CSV with the same headers lands, the mapping auto-applies. Toggle persists from the
+            Settings page; wipeable any time.
+          </span>
+        </span>
+      </label>
+    </div>
   );
 }
 

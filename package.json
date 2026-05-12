@@ -1,6 +1,6 @@
 {
   "name": "subliminate",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "type": "module",
   "description": "Privacy-first subscription audit. 100% client-side, verifiable.",

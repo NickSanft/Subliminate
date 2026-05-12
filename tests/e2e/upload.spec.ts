@@ -33,6 +33,21 @@ test.describe('CSV upload flow', () => {
     await expect(page.getByRole('alert')).toContainText(/doesn'?t look like a CSV/i);
   });
 
+  test('the "Remember this mapping" checkbox is clickable and reflects the persistence-store toggle', async ({ page }) => {
+    await page.goto('/upload');
+    await page.getByTestId('csv-file-input').setInputFiles(resolve(FIXTURES, 'chase_2024.csv'));
+    await expect(page.getByRole('heading', { name: /confirm the columns/i })).toBeVisible({ timeout: 15_000 });
+
+    const checkbox = page.getByTestId('remember-mapping');
+    await expect(checkbox).toBeEnabled();
+    await expect(checkbox).not.toBeChecked();
+
+    await checkbox.check();
+    await expect(checkbox).toBeChecked();
+    await checkbox.uncheck();
+    await expect(checkbox).not.toBeChecked();
+  });
+
   test('a generic-headers CSV still auto-maps and flags positive sign convention', async ({ page }) => {
     await page.goto('/upload');
     await page.getByTestId('csv-file-input').setInputFiles(resolve(FIXTURES, 'generic_2025.csv'));

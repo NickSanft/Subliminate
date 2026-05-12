@@ -4,6 +4,32 @@ All notable changes to Subliminate. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); pre-1.0 minor
 version tracks phase number.
 
+## [1.1.1] — 2026-05-12
+
+### Fixed
+
+- The **"Remember this mapping" checkbox** on the Upload mapping
+  screen was hardcoded `disabled` with placeholder copy from Phase
+  2 ("ships in Phase 7"). The persistence layer landed in Phase 7
+  but I never wired the checkbox up. Now bound to
+  `usePersistenceStore().mappingsEnabled` — checking it enables
+  headers-only mapping persistence (no transaction data ever) for
+  the same auto-apply behavior the Settings page exposes.
+
+### Tests
+
+- New regression e2e in [`tests/e2e/upload.spec.ts`](tests/e2e/upload.spec.ts)
+  asserts the checkbox is enabled, starts unchecked, accepts a
+  check, and accepts an uncheck. CI fails if this ever silently
+  reverts to `disabled` again.
+
+### Bundle
+
+Unchanged from v1.1.0 — the fix is a few lines of state binding,
+no new dependencies.
+
+---
+
 ## [1.1.0] — 2026-05-12
 
 Small post-1.0 polish from the first round of real usage.
