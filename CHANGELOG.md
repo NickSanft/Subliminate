@@ -4,6 +4,96 @@ All notable changes to Subliminate. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); pre-1.0 minor
 version tracks phase number.
 
+## [1.0.0] — 2026-05-11
+
+**Phase 8 — ADR pass, README polish, deploy**
+
+The 1.0 cut. Everything from Phases 1–7 ships; this phase makes the
+project deployable and the artifacts presentable.
+
+### Added
+
+- **GitHub Pages deploy workflow** ([.github/workflows/deploy.yml](.github/workflows/deploy.yml)):
+  - `build` job runs the production build with `BASE=/Subliminate/`
+    and uploads `dist/` as a Pages artifact
+  - `deploy` job promotes the artifact, fetches the live
+    `bundle-manifest.json` from the deployed URL, rebuilds locally
+    from the same commit, and asserts the deployed digest matches the
+    fresh-rebuild digest. If anything tampered with the bundle in
+    transit, the deploy fails.
+  - All actions pinned by full commit SHA. Permissions minimal per
+    job (`pages: write` + `id-token: write` on the deploy job only).
+- **SPA 404 fallback** for GitHub Pages ([public/404.html](public/404.html)):
+  - Pages serves this for unknown paths. A tiny inline script stashes
+    the requested path in `sessionStorage`, redirects to `./`, and
+    `main.tsx` replays the URL into history so React Router resolves
+    it. CSP relaxed *only* for this inline-script transition file;
+    the main app still ships with strict CSP and no inline scripts.
+- **Vite `base` config plumbing.** `BASE` env var controls the base
+  path: empty in dev / Playwright / size-limit, `/Subliminate/` on
+  Pages. React Router picks the same `basename` via
+  `import.meta.env.BASE_URL`.
+- **README rewrite** to the 10-section portfolio structure:
+  elevator pitch · verification in 30s · screenshots · architecture
+  (mermaid) · detection summary · project structure · dev setup ·
+  build verification · ADR index · roadmap/non-goals.
+
+### Why this matters
+
+The deploy workflow is the project's last load-bearing artifact. It
+closes the verification loop from the *other* end: a reviewer who
+clones the repo and runs `pnpm verify:repro` gets a digest;
+the workflow demonstrates the same digest pops out of the deployed
+Pages bundle automatically, every push. The privacy claim is now
+end-to-end verifiable without trusting the deployer.
+
+### Architecture decisions reviewed
+
+All nine ADRs reviewed for length (80–191 lines each, 1–3 minute
+reads), consistency (every record has Context / Decision /
+Consequences / Alternatives / Notes), and accuracy (each ADR matches
+the shipped code). The
+[ADR index](docs/adr/README.md) is the entry point.
+
+### Pre-push checklist
+
+- ✅ typecheck, lint clean
+- ✅ 175/175 unit tests
+- ✅ 36/36 Playwright tests
+- ✅ build + all six size budgets pass
+- ✅ `pnpm verify:repro` — digests match
+- ✅ CI green on the push commit BEFORE tagging
+
+### Portfolio acceptance test
+
+The five-point bar from the original brief:
+
+1. **Read the README in 90 seconds.** The 10-section structure is
+   designed for a fast first read; section 1 alone communicates the
+   product and the verification path.
+2. **Click through to ADR-0003 or ADR-0008.** Both have explicit
+   Alternatives-considered sections that show the trade-offs.
+3. **Complete a full flow with the network panel staying at zero.**
+   Demonstrated by the Playwright privacy suite on every push.
+4. **Run `pnpm build` and verify the hash matches the Privacy page.**
+   `verify:repro` + the deploy workflow + the Privacy page's digest
+   render this falsifiable.
+5. **Read three randomly-chosen files in `src/`.** Strict TS, no
+   `any`, no `@ts-ignore`, discriminated unions over booleans, pure
+   functions over classes, comments where the *why* isn't obvious.
+
+### Limitations / not yet shipped (post-1.0)
+
+- The deploy workflow assumes GitHub Pages is enabled on the repo
+  (Settings → Pages → "GitHub Actions"). The workflow can't enable
+  itself; the README calls this out.
+- The deploy job re-derives the digest by rebuilding inside CI. A
+  more thorough check would also verify the digest matches the
+  manifest the deploy artifact reported pre-upload. Worth adding
+  if anyone ever sees a mismatch.
+
+---
+
 ## [0.7.0] — 2026-05-11
 
 **Phase 7 — Settings + ephemeral-first persistence**

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'none'; frame-ancestors 'none'; form-action 'none'; base-uri 'self'; object-src 'none'" />
+    <title>Subliminate · loading</title>
+    <script>
+      // SPA fallback for GitHub Pages. Pages serves this file for any
+      // unknown path; we rewrite the URL back to the SPA entry while
+      // preserving the path so React Router can resolve it client-side.
+      //
+      // The CSP allows 'unsafe-inline' here — only here — for this one
+      // tiny redirect script. The main app's CSP (in index.html) is
+      // strict and does not allow inline scripts.
+      (function () {
+        var path = window.location.pathname;
+        var search = window.location.search;
+        var hash = window.location.hash;
+        // Path includes the base segment when deployed under /<repo>/.
+        // Re-issue as a session-storage hand-off so index.html can
+        // restore the URL on the SPA side.
+        sessionStorage.setItem('subliminate.redirect', path + search + hash);
+        window.location.replace('./');
+      })();
+    </script>
+  </head>
+  <body>
+    <noscript>You need JavaScript enabled to view this app. The privacy invariant is enforced by code that runs in your browser — none of it runs on a server.</noscript>
+  </body>
+</html>

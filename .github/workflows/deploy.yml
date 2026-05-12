@@ -1,0 +1,125 @@
+# Subliminate — deploy to GitHub Pages on push to main.
+#
+# Two jobs:
+#   build  — runs the production build with BASE set to the Pages path,
+#            uploads dist/ as a Pages artifact
+#   deploy — promotes the artifact and verifies the deployed bundle's
+#            top-level digest matches what the artifact reported. If
+#            the deployment is tampered with in transit, this step
+#            fails the workflow.
+#
+# All actions pinned by full commit SHA. Permissions are scoped to the
+# minimum each job needs. The Pages-specific `pages: write` +
+# `id-token: write` permissions are required by actions/deploy-pages.
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build for Pages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@739bfe42ca9233c5e6aca07c1a25a9d34aca49b0 # v6.0.7
+        with:
+          version: 10.32.1
+
+      - name: Set up Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Fetch self-hosted fonts
+        run: pnpm fetch-fonts
+
+      - name: Build with Pages base path
+        run: pnpm build
+        env:
+          BASE: /Subliminate/
+
+      - name: Configure Pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: dist
+
+      - name: Surface bundle digest
+        run: |
+          jq -r '"Bundle digest: " + .digest' dist/bundle-manifest.json | tee -a "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: Deploy to Pages + verify hash
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+      contents: read
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
+
+      - name: Fetch deployed bundle-manifest.json
+        run: |
+          set -euo pipefail
+          url="${{ steps.deployment.outputs.page_url }}bundle-manifest.json"
+          echo "Fetching $url"
+          curl --fail --silent --show-error --max-time 60 "$url" -o deployed-manifest.json
+          jq -r '"Deployed digest: " + .digest' deployed-manifest.json | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Re-derive expected digest from this commit
+        uses: pnpm/action-setup@739bfe42ca9233c5e6aca07c1a25a9d34aca49b0 # v6.0.7
+        with:
+          version: 10.32.1
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Fetch fonts
+        run: pnpm fetch-fonts
+
+      - name: Build (same BASE as deploy) and assert digest matches
+        run: |
+          set -euo pipefail
+          BASE=/Subliminate/ pnpm build
+          local_digest=$(jq -r .digest dist/bundle-manifest.json)
+          deployed_digest=$(jq -r .digest deployed-manifest.json)
+          echo "local:    $local_digest"
+          echo "deployed: $deployed_digest"
+          if [ "$local_digest" != "$deployed_digest" ]; then
+            echo "::error::Deployed bundle digest does not match local rebuild"
+            exit 1
+          fi
+          echo "Digest match ✅" | tee -a "$GITHUB_STEP_SUMMARY"
