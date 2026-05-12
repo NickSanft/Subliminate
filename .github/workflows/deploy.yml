@@ -84,18 +84,12 @@ jobs:
       - id: deployment
         uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
 
-      - name: Fetch deployed bundle-manifest.json
-        run: |
-          set -euo pipefail
-          url="${{ steps.deployment.outputs.page_url }}bundle-manifest.json"
-          echo "Fetching $url"
-          curl --fail --silent --show-error --max-time 60 "$url" -o deployed-manifest.json
-          jq -r '"Deployed digest: " + .digest' deployed-manifest.json | tee -a "$GITHUB_STEP_SUMMARY"
-
+      # Checkout BEFORE the curl + build steps: actions/checkout cleans
+      # the workspace, which would wipe deployed-manifest.json if we
+      # wrote it first.
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Re-derive expected digest from this commit
-        uses: pnpm/action-setup@739bfe42ca9233c5e6aca07c1a25a9d34aca49b0 # v6.0.7
+      - uses: pnpm/action-setup@739bfe42ca9233c5e6aca07c1a25a9d34aca49b0 # v6.0.7
         with:
           version: 10.32.1
 
@@ -109,6 +103,22 @@ jobs:
 
       - name: Fetch fonts
         run: pnpm fetch-fonts
+
+      - name: Fetch deployed bundle-manifest.json
+        run: |
+          set -euo pipefail
+          url="${{ steps.deployment.outputs.page_url }}bundle-manifest.json"
+          echo "Fetching $url"
+          # Pages cache propagation can lag by a few seconds; retry briefly.
+          for i in 1 2 3 4 5; do
+            if curl --fail --silent --show-error --max-time 30 "$url" -o deployed-manifest.json; then
+              break
+            fi
+            echo "  attempt $i failed; sleeping 5s"
+            sleep 5
+          done
+          test -s deployed-manifest.json
+          jq -r '"Deployed digest: " + .digest' deployed-manifest.json | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Build (same BASE as deploy) and assert digest matches
         run: |
