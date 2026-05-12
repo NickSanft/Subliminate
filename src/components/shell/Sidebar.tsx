@@ -131,9 +131,9 @@ export function Sidebar() {
           justifyContent: 'space-between',
         }}
       >
-        <span>v0.1.0</span>
+        <span>v{__APP_VERSION__}</span>
         <a
-          href="https://github.com/"
+          href="https://github.com/NickSanft/Subliminate"
           target="_blank"
           rel="noreferrer"
           style={{ color: 'var(--ink-2)', textDecoration: 'none' }}

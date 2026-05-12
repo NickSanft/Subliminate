@@ -45,6 +45,17 @@ export function UploadScreen() {
         {state.kind === 'idle' || state.kind === 'error' ? (
           <EmptyState
             onFile={(file) => void ingest(file)}
+            onLoadSample={async () => {
+              // Bundled as a separate lazy chunk via Vite's `?raw` suffix,
+              // so the CSV string only ships if the user clicks. Loaded
+              // as a same-origin script chunk — does not violate the
+              // CSP `connect-src 'none'` invariant.
+              const { default: csv } = await import('./sample.csv?raw');
+              const file = new File([csv], 'sample-chase-24-months.csv', {
+                type: 'text/csv',
+              });
+              void ingest(file);
+            }}
             error={state.kind === 'error' ? state.error : null}
           />
         ) : state.kind === 'reading' || state.kind === 'parsing' ? (
@@ -64,7 +75,13 @@ export function UploadScreen() {
   );
 }
 
-function EmptyState({ onFile, error }: { onFile: (f: File) => void; error: ParseError | null }) {
+type EmptyStateProps = {
+  onFile: (f: File) => void;
+  onLoadSample: () => Promise<void> | void;
+  error: ParseError | null;
+};
+
+function EmptyState({ onFile, onLoadSample, error }: EmptyStateProps) {
   return (
     <>
       <h1 className="h-display" style={{ fontSize: 36, margin: '0 0 10px' }}>
@@ -79,6 +96,29 @@ function EmptyState({ onFile, error }: { onFile: (f: File) => void; error: Parse
         onFile={onFile}
         {...(error ? { hint: parseErrorMessage(error) } : {})}
       />
+      <div
+        style={{
+          marginTop: 22,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 16,
+          flexWrap: 'wrap',
+          padding: '14px 18px',
+          background: 'var(--paper-1)',
+          border: '1px solid var(--line)',
+          borderRadius: 10,
+        }}
+      >
+        <span style={{ fontSize: 12.5, color: 'var(--ink-2)', maxWidth: 540, lineHeight: 1.55 }}>
+          <strong style={{ color: 'var(--ink-3)', fontWeight: 500 }}>Don't have a CSV handy?</strong>{' '}
+          Try the synthetic 24-month statement — 1,184 rows, 12 planted subscriptions including a
+          mid-year Adobe price hike. Same flow as your own data.
+        </span>
+        <Button variant="secondary" onClick={() => void onLoadSample()} data-testid="load-sample-csv">
+          Try with sample data →
+        </Button>
+      </div>
     </>
   );
 }

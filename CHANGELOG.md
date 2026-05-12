@@ -4,6 +4,65 @@ All notable changes to Subliminate. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); pre-1.0 minor
 version tracks phase number.
 
+## [1.1.0] — 2026-05-12
+
+Small post-1.0 polish from the first round of real usage.
+
+### Added
+
+- **Try-with-sample-data button** on the Upload empty state. The
+  full 24-month / 1,184-row Chase fixture (same one CI uses for the
+  precision/recall targets) ships as a lazy `?raw` import chunk
+  ([src/screens/upload/sample.csv](src/screens/upload/sample.csv)).
+  Clicking the button bakes it into a `File` and feeds the parser —
+  same code path as a real drag-drop. New e2e in
+  [sample-data.spec.ts](tests/e2e/sample-data.spec.ts) confirms the
+  flow and asserts zero non-self requests while loading.
+
+### Fixed
+
+- **Sidebar version** was hardcoded to `v0.1.0` since Phase 1. Now
+  reads `__APP_VERSION__` (Vite `define` from `package.json`), so
+  it stays correct on every release.
+- **Sidebar "source" link** was pointing at the placeholder
+  `https://github.com/` — fixed to
+  `https://github.com/NickSanft/Subliminate`.
+- **Settings → About this build** was stuck at `version 0.7.0`.
+  Same fix: reads `__APP_VERSION__`.
+
+### Architecture
+
+- `__APP_VERSION__` is plumbed via `vite.config.ts → define` from
+  `package.json` at build time. Single source of truth; bumping
+  `package.json` and rebuilding is sufficient. Type declared in
+  [src/types/globals.d.ts](src/types/globals.d.ts).
+
+### Bundle (split budgets — all under)
+
+| Asset                                | Brotli   | Budget |
+| ------------------------------------ | -------- | ------ |
+| Main bundle (initial)                | 74.8 KB  | 85 KB  |
+| Recharts chunk (lazy)                | 86.4 KB  | 100 KB |
+| Subscription Detail chunk (lazy)     |  8.7 KB  | 12 KB  |
+| Insights chunk (lazy)                |  8.7 KB  | 12 KB  |
+| CSV worker (lazy)                    |  8.6 KB  | 12 KB  |
+| **Sample CSV chunk (lazy, NEW)**     |  8.6 KB  | 15 KB  |
+| CSS                                  |  3.8 KB  |  6 KB  |
+
+The sample-CSV chunk is only fetched if the user clicks the button.
+First-paint cost is unchanged.
+
+### Pre-push checklist
+
+- ✅ typecheck, lint clean
+- ✅ 175/175 unit tests
+- ✅ 38/38 Playwright tests (was 36; +2 sample-data)
+- ✅ build + all seven size budgets pass
+- ✅ `pnpm verify:repro` — digests match
+- ✅ CI verified green via `gh run view` before tagging
+
+---
+
 ## [1.0.0] — 2026-05-11
 
 **Phase 8 — ADR pass, README polish, deploy**

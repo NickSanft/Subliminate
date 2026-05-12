@@ -473,7 +473,7 @@ function AboutCard({ digest }: { digest: string }) {
           }}
         >
           <div>
-            <span style={{ color: 'var(--ink-1)' }}>version </span>0.7.0
+            <span style={{ color: 'var(--ink-1)' }}>version </span>{__APP_VERSION__}
           </div>
           <div>
             <span style={{ color: 'var(--ink-1)' }}>sha256  </span>
